@@ -11,6 +11,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
+import com.google.android.material.textview.MaterialTextView
 import me.est412.wordstrainer.MainActivity.OnScale
 import me.est412.wordstrainer.databinding.ActivityMainBinding
 import me.est412.wordstrainer.model.Dictionary
@@ -26,60 +27,61 @@ class MainActivity : AppCompatActivity() {
         const val EDIT_REQUEST_CODE = 44
 
         const val PREF_LAST_FILE = "lastFile"
-        const val PREF_SIZE_LANG_0 = "sizeLang0"
-        const val PREF_SIZE_LANG_1 = "sizeLang1"
+        const val PREF_SIZE_FOREIGN = "sizeForeign"
+        const val PREF_SIZE_NATIVE = "sizeNative"
     }
 
     private lateinit var tvLang: Array<TextView>
     private lateinit var menu: Menu
 
-    private lateinit var bnd: ActivityMainBinding
+    private lateinit var b: ActivityMainBinding
     private lateinit var dictIterator: DictionaryIterator
     private var dict: Dictionary? = null
     private var uri: Uri? = null
-    private var toShow = 0
+    private var showTranslation = false
 
     private lateinit var scaleGestureDetector: ScaleGestureDetector
     private var scaleFactor = 1.0f
     private lateinit var scalingTV: TextView
-    private val initialSize = mutableMapOf<TextView, Float>()
-
+    private val textSizesSP = mutableMapOf<TextView, Float>()
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         System.setProperty(
-            "org.apache.poi.javax.xml.stream.XMLInputFactory",
-            "com.fasterxml.aalto.stax.InputFactoryImpl"
+                "org.apache.poi.javax.xml.stream.XMLInputFactory",
+                "com.fasterxml.aalto.stax.InputFactoryImpl"
         )
         System.setProperty(
-            "org.apache.poi.javax.xml.stream.XMLOutputFactory",
-            "com.fasterxml.aalto.stax.OutputFactoryImpl"
+                "org.apache.poi.javax.xml.stream.XMLOutputFactory",
+                "com.fasterxml.aalto.stax.OutputFactoryImpl"
         )
         System.setProperty(
-            "org.apache.poi.javax.xml.stream.XMLEventFactory",
-            "com.fasterxml.aalto.stax.EventFactoryImpl"
+                "org.apache.poi.javax.xml.stream.XMLEventFactory",
+                "com.fasterxml.aalto.stax.EventFactoryImpl"
         )
-        bnd = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(bnd.root)
+        b = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(b.root)
 
         dictIterator = DictionaryIterator()
         scaleGestureDetector = ScaleGestureDetector(this, OnScale { scale(it) })
-        bnd.tvTop.setOnTouchListener { v, e -> onTouch(v, e) }
-        bnd.tvBottom.setOnTouchListener { v, e -> onTouch(v, e) }
-        tvLang = arrayOf(bnd.tvTop, bnd.tvBottom)
+        b.tvForeign.setOnTouchListener { v, e -> onTouch(v, e) }
+        b.tvNative.setOnTouchListener { v, e -> onTouch(v, e) }
+        tvLang = arrayOf(b.tvForeign, b.tvNative)
 
         val sPref = getPreferences(MODE_PRIVATE)
         val lastFile = sPref.getString(PREF_LAST_FILE, null)
         if (lastFile != null) {
-            bnd.tvUri.text = "Last: $lastFile"
+            b.tvUri.text = getString(R.string.tv_uri_last, lastFile)
         }
 
-        initialSize[tvLang[0]] = sPref.getFloat(PREF_SIZE_LANG_0, tvLang[0].textSize)
-        initialSize[tvLang[1]] = sPref.getFloat(PREF_SIZE_LANG_1, tvLang[1].textSize)
-        tvLang[0].setTextSize(TypedValue.COMPLEX_UNIT_PX, initialSize[tvLang[0]]!!)
-        tvLang[1].setTextSize(TypedValue.COMPLEX_UNIT_PX, initialSize[tvLang[1]]!!)
+        textSizesSP[b.tvForeign] = sPref.getFloat(PREF_SIZE_FOREIGN, b.tvForeign.textSizeSP())
+        textSizesSP[b.tvNative] = sPref.getFloat(PREF_SIZE_NATIVE, b.tvNative.textSizeSP())
+        b.tvForeign.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizesSP[b.tvForeign]!!)
+        b.tvNative.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizesSP[b.tvNative]!!)
     }
+
+    private fun MaterialTextView.textSizeSP() = textSize / resources.displayMetrics.scaledDensity
 
     override fun onDestroy() {
         if (uri != null) {
@@ -102,8 +104,8 @@ class MainActivity : AppCompatActivity() {
         }
         val sPref = getPreferences(MODE_PRIVATE)
         val ed = sPref.edit()
-        ed.putFloat(PREF_SIZE_LANG_0, tvLang[0].textSize)
-        ed.putFloat(PREF_SIZE_LANG_1, tvLang[1].textSize)
+        ed.putFloat(PREF_SIZE_FOREIGN, b.tvForeign.textSizeSP())
+        ed.putFloat(PREF_SIZE_NATIVE, b.tvNative.textSizeSP())
         ed.apply()
         super.onPause()
     }
@@ -135,7 +137,7 @@ class MainActivity : AppCompatActivity() {
         } catch (ignored: NullPointerException) {
             // do nothing
         }
-        bnd.tvUri.text = path
+        b.tvUri.text = path
         dictIterator.setDictionary(dict)
         restart()
         val sPref = getPreferences(MODE_PRIVATE)
@@ -171,30 +173,31 @@ class MainActivity : AppCompatActivity() {
 
     private fun restart() {
         dictIterator.clearCurWord()
-        toShow = 1
-        bnd.btnNext.isEnabled = true
-        bnd.cbNativeFirst.isEnabled = true
-        bnd.btnNext.text = getString(R.string.btn_next_go)
-        tvLang[0].text = ""
-        tvLang[1].text = ""
-        bnd.tvCount.text = "${dictIterator.getIdxWordsCounder(dictIterator.curLang)} / " +
+        showTranslation = false
+        b.btnNext.isEnabled = true
+        b.cbNativeFirst.isEnabled = true
+        b.btnNext.text = getString(R.string.btn_next_go)
+        b.tvForeign.hint = getString(R.string.tv_foreign)
+        b.tvNative.hint = getString(R.string.tv_native)
+        b.tvForeign.text = ""
+        b.tvNative.text = ""
+        b.tvCount.text = "${dictIterator.getIdxWordsCounder(dictIterator.curLang)} / " +
                 "${dictIterator.getIdxWordsNumber(dictIterator.curLang)}"
-        bnd.cbRepeat.isChecked = false
-        bnd.cbRepeat.isEnabled = false
-        bnd.cbRepetition.isEnabled = true
-        //dictIterator.setCurLang(cbNativeFirst.isChecked() ? 1 : 0);
+        b.cbRepeat.isChecked = false
+        b.cbRepeat.isEnabled = false
+        b.cbRepetition.isEnabled = true
     }
 
     private fun scale(detector: ScaleGestureDetector): Boolean {
         scaleFactor *= detector.scaleFactor
         scaleFactor =
-            MIN_SCALE_FACTOR.coerceAtLeast(scaleFactor.coerceAtMost(MAX_SCALE_FACTOR))
-        val size = initialSize[scalingTV]!! * scaleFactor
-        scalingTV.setTextSize(TypedValue.COMPLEX_UNIT_PX, size)
+                MIN_SCALE_FACTOR.coerceAtLeast(scaleFactor.coerceAtMost(MAX_SCALE_FACTOR))
+        val size = textSizesSP[scalingTV]!! * scaleFactor
+        scalingTV.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
         return true
     }
 
-    private fun onTouch(v: View, event: MotionEvent) : Boolean {
+    private fun onTouch(v: View, event: MotionEvent): Boolean {
         scalingTV = v as TextView
         scaleGestureDetector.onTouchEvent(event)
         return true
@@ -224,81 +227,68 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onCbNativeFirst(view: View?) {
-        dictIterator.setActiveLangs(if (bnd.cbNativeFirst.isChecked) 1 else 0)
-        bnd.tvCount.text = "${dictIterator.getIdxWordsCounder(dictIterator.curLang)} / " +
+        b.cvTop.removeAllViews()
+        b.cvBottom.removeAllViews()
+        if (b.cbNativeFirst.isChecked) {
+            b.cvTop.addView(b.tvNative)
+            b.cvBottom.addView(b.tvForeign)
+        } else {
+            b.cvTop.addView(b.tvForeign)
+            b.cvBottom.addView(b.tvNative)
+        }
+        dictIterator.setActiveLangs(if (b.cbNativeFirst.isChecked) 1 else 0)
+        b.tvCount.text = "${dictIterator.getIdxWordsCounder(dictIterator.curLang)} / " +
                 "${dictIterator.getIdxWordsNumber(dictIterator.curLang)}"
-        val tmpSize = tvLang[0].textSize
-        tvLang[0].setTextSize(TypedValue.COMPLEX_UNIT_PX, tvLang[1].textSize)
-        tvLang[1].setTextSize(TypedValue.COMPLEX_UNIT_PX, tmpSize)
-        val tmpText = tvLang[0].text.toString()
-        tvLang[0].text = tvLang[1].text
-        tvLang[1].text = tmpText
     }
 
     fun onCbRepeat(view: View?) {
-        dictIterator.setToRepeat(bnd.cbRepeat.isChecked)
+        dictIterator.setToRepeat(b.cbRepeat.isChecked)
     }
 
     fun onCbRepetition(view: View?) {
-        dictIterator.setRepetition(bnd.cbRepetition.isChecked)
-        bnd.tvCount.text = "${dictIterator.getIdxWordsCounder(dictIterator.curLang)} / " +
+        dictIterator.setRepetition(b.cbRepetition.isChecked)
+        b.tvCount.text = "${dictIterator.getIdxWordsCounder(dictIterator.curLang)} / " +
                 "${dictIterator.getIdxWordsNumber(dictIterator.curLang)}"
     }
 
     fun onBtnNext(view: View?) {
-        bnd.cbNativeFirst.isEnabled = false
-        bnd.cbRepeat.isEnabled = true
-        bnd.cbRepetition.isEnabled = false
-        bnd.tvTop.hint = ""
-        bnd.tvBottom.hint = ""
-        if (toShow == 1) {
-            //buttonNext.disableProperty().unbind();
+        b.cbNativeFirst.isEnabled = false
+        b.cbRepeat.isEnabled = true
+        b.cbRepetition.isEnabled = false
+        b.tvForeign.hint = ""
+        b.tvNative.hint = ""
+        if (!showTranslation) {
             if (!dictIterator.isWordsRemain) {
-                bnd.btnNext.isEnabled = false
+                b.btnNext.isEnabled = false
                 return
             }
             dictIterator.nextWord()
-            if (!bnd.cbNativeFirst.isChecked) {
-                tvLang[0].text = dictIterator.curWord[0]
-                tvLang[1].text = dictIterator.curWord[1]
+            if (b.cbNativeFirst.isChecked) {
+                b.tvNative.text = dictIterator.curWord[1]
+                b.tvForeign.text = ""
             } else {
-                tvLang[0].text = dictIterator.curWord[1]
-                tvLang[1].text = dictIterator.curWord[0]
+                b.tvNative.text = ""
+                b.tvForeign.text = dictIterator.curWord[0]
             }
-            bnd.tvCount.text = "${dictIterator.getIdxWordsCounder(dictIterator.curLang)} / " +
+            b.tvCount.text = "${dictIterator.getIdxWordsCounder(dictIterator.curLang)} / " +
                     "${dictIterator.getIdxWordsNumber(dictIterator.curLang)}"
-            bnd.cbRepeat.isChecked = dictIterator.isToRepeat()
-            //hboxLang.setDisable(true);
-//            if (checkboxExample.isSelected()) toShow = 2;
-//            else toShow = 3;
-            toShow = 3
-        } else if (toShow == 3) {
+            b.cbRepeat.isChecked = dictIterator.isToRepeat()
+            showTranslation = true
+        } else { // show translation
             dictIterator.translateCurWord()
-            if (!bnd.cbNativeFirst.isChecked) {
-                tvLang[0].text = dictIterator.curWord[0]
-                tvLang[1].text = dictIterator.curWord[1]
+            if (b.cbNativeFirst.isChecked) {
+                b.tvNative.text = ""
+                b.tvForeign.text = dictIterator.curWord[0]
             } else {
-                tvLang[0].text = dictIterator.curWord[1]
-                tvLang[1].text = dictIterator.curWord[0]
+                b.tvNative.text = dictIterator.curWord[1]
+                b.tvForeign.text = ""
             }
             if (!dictIterator.isWordsRemain) {
-                bnd.btnNext.isEnabled = false
+                b.btnNext.isEnabled = false
                 return
             }
-            //hboxLang.setDisable(false);
-//            if (checkboxExample.isSelected()) toShow = 4;
-//            else {
-//                toShow = 1;
-//                buttonNext.disableProperty().bind(dictIterator.showEmpty);
-//            }
-            toShow = 1
+            showTranslation = false
         }
-        //        else if (toShow == 4 && checkboxExample.isSelected()) {
-//            dictIterator.showTrExample();
-//            toShow = 1;
-//            shown = 4;
-//            buttonNext.disableProperty().bind(dictIterator.showEmpty);
-//        }
-        bnd.btnNext.text = getString(R.string.btn_next_next)
+        b.btnNext.text = getString(R.string.btn_next_next)
     }
 }
