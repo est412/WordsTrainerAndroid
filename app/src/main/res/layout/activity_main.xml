@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".MainActivity">
+
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/cb_repetition"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onCbRepetition"
+        android:text="@string/cb_repetition"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/cb_native_first"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onCbNativeFirst"
+        android:text="@string/cb_native_first"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/tv_uri"
+        app:layout_constraintTop_toBottomOf="@+id/cb_native_first">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cv_top"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:layout_weight="1">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_top"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="16dp"
+                android:gravity="center"
+                android:hint="@string/tv_top"
+                android:textColor="@color/black"
+                android:textSize="24sp" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cv_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:layout_weight="1">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_bottom"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="16dp"
+                android:gravity="center"
+                android:hint="@string/tv_bottom"
+                android:textColor="@color/black"
+                android:textSize="24sp" />
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_uri"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="start"
+        android:hint="Current file name"
+        android:textAlignment="viewStart"
+        app:layout_constraintBottom_toTopOf="@+id/cb_repeat"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="HardcodedText" />
+
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/cb_repeat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:onClick="onCbRepeat"
+        android:text="@string/cb_repeat"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_next"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/btn_next" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:hint="@string/count"
+        android:textAlignment="viewEnd"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_next"
+        app:layout_constraintEnd_toStartOf="@+id/btn_next"
+        app:layout_constraintTop_toTopOf="@+id/btn_next" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:onClick="onBtnNext"
+        android:text="@string/btn_next_go"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

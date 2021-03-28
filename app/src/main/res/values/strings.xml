@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Words Trainer</string>
+    <string name="cb_repetition">Repetition</string>
+    <string name="cb_native_first">Native first</string>
+    <string name="tv_top">Foreign</string>
+    <string name="cb_repeat">Repeat</string>
+    <string name="btn_next_go">Go !</string>
+    <string name="btn_next_next">Next</string>
+    <string name="tv_bottom">Native</string>
+    <string name="done">Done</string>
+    <string name="slash">/</string>
+    <string name="count">Done / Total</string>
+    <string name="open_xslx">Open *.xslx</string>
+    <string name="restart">Restart</string>
+</resources>
