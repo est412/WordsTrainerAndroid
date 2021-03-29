@@ -58,7 +58,6 @@
                 android:layout_margin="16dp"
                 android:gravity="center"
                 android:hint="@string/tv_foreign"
-                android:textColor="@color/black"
                 android:textSize="24sp" />
         </com.google.android.material.card.MaterialCardView>
 
@@ -77,7 +76,6 @@
                 android:layout_margin="16dp"
                 android:gravity="center"
                 android:hint="@string/tv_native"
-                android:textColor="@color/black"
                 android:textSize="24sp" />
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
