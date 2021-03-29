@@ -19,6 +19,7 @@ import me.est412.wordstrainer.model.DictionaryIterator
 import me.est412.wordstrainer.model.XLSXPoiDictionary
 import java.io.IOException
 
+@SuppressLint("SetTextI18n")
 class MainActivity : AppCompatActivity() {
     companion object {
         const val MIN_SCALE_FACTOR = 0.5f
