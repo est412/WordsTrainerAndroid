@@ -278,11 +278,9 @@ class MainActivity : AppCompatActivity() {
         } else { // show translation
             dictIterator.translateCurWord()
             if (b.cbNativeFirst.isChecked) {
-                b.tvNative.text = ""
                 b.tvForeign.text = dictIterator.curWord[0]
             } else {
                 b.tvNative.text = dictIterator.curWord[1]
-                b.tvForeign.text = ""
             }
             if (!dictIterator.isWordsRemain) {
                 b.btnNext.isEnabled = false
