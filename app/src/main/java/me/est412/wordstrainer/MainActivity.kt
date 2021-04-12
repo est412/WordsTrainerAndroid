@@ -95,6 +95,10 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    override fun onBackPressed() {
+        moveTaskToBack(true);
+    }
+
     override fun onPause() {
         if (uri != null) {
             try {
