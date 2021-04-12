@@ -12,6 +12,6 @@
     <string name="count">Done / Total</string>
     <string name="open_xslx">Open *.xslx</string>
     <string name="restart">Restart</string>
-    <string name="tv_uri_last">Last: %s</string>
+    <string name="tv_uri_last">Recent: %s</string>
     <string name="tv_uri_hint">Current file name</string>
 </resources>
