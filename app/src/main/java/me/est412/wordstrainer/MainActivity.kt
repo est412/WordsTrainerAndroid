@@ -2,14 +2,18 @@ package me.est412.wordstrainer
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.util.TypedValue
 import android.view.*
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.iterator
 import androidx.documentfile.provider.DocumentFile
 import com.google.android.material.textview.MaterialTextView
 import me.est412.wordstrainer.MainActivity.OnScale
@@ -19,6 +23,7 @@ import me.est412.wordstrainer.model.DictionaryIterator
 import me.est412.wordstrainer.model.XLSXPoiDictionary
 import java.io.IOException
 
+
 @SuppressLint("SetTextI18n")
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -27,9 +32,10 @@ class MainActivity : AppCompatActivity() {
 
         const val EDIT_REQUEST_CODE = 44
 
-        const val PREF_LAST_FILE = "lastFile"
+        const val PREF_RECENT_FILE_NAME = "recentFileName"
         const val PREF_SIZE_FOREIGN = "sizeForeign"
         const val PREF_SIZE_NATIVE = "sizeNative"
+        const val PREF_RECENT_URI = "recentUri"
     }
 
     private lateinit var tvLang: Array<TextView>
@@ -39,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var dictIterator: DictionaryIterator
     private var dict: Dictionary? = null
     private var uri: Uri? = null
+    private var recentUri: Uri? = null
     private var showTranslation = false
 
     private lateinit var scaleGestureDetector: ScaleGestureDetector
@@ -71,11 +78,15 @@ class MainActivity : AppCompatActivity() {
         tvLang = arrayOf(b.tvForeign, b.tvNative)
 
         val sPref = getPreferences(MODE_PRIVATE)
-        val lastFile = sPref.getString(PREF_LAST_FILE, null)
-        if (lastFile != null) {
-            b.tvUri.text = getString(R.string.tv_uri_last, lastFile)
+        val recentFile = sPref.getString(PREF_RECENT_FILE_NAME, null)
+        if (recentFile != null) {
+            b.tvUri.text = getString(R.string.tv_uri_recent, recentFile)
         }
-
+        if (sPref.getString(PREF_RECENT_URI, null) == null) {
+            recentUri = null
+        } else {
+            recentUri = Uri.parse(sPref.getString(PREF_RECENT_URI, null))
+        }
         textSizesSP[b.tvForeign] = sPref.getFloat(PREF_SIZE_FOREIGN, b.tvForeign.textSizeSP())
         textSizesSP[b.tvNative] = sPref.getFloat(PREF_SIZE_NATIVE, b.tvNative.textSizeSP())
         b.tvForeign.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizesSP[b.tvForeign]!!)
@@ -120,9 +131,14 @@ class MainActivity : AppCompatActivity() {
         if (requestCode != EDIT_REQUEST_CODE || resultCode != RESULT_OK || data == null) {
             return
         }
-        val oldUri = uri
+        data.data
+        applyUri(data.data)
+    }
+
+    private fun applyUri(uri: Uri?) {
+        val oldUri = this.uri
         val oldDict = dict
-        uri = data.data
+        this.uri = uri
         try {
             dict = XLSXPoiDictionary(contentResolver.openInputStream(uri!!)!!)
         } catch (e: Exception) {
@@ -145,11 +161,14 @@ class MainActivity : AppCompatActivity() {
         b.tvUri.text = path
         dictIterator.setDictionary(dict)
         restart()
+        recentUri = null
+        menu.findItem(R.id.mnu_recent).isEnabled = false
         val sPref = getPreferences(MODE_PRIVATE)
         val ed = sPref.edit()
-        ed.putString(PREF_LAST_FILE, path)
+        ed.putString(PREF_RECENT_FILE_NAME, path)
+        ed.putString(PREF_RECENT_URI, uri.toString())
         ed.apply()
-        menu.findItem(R.id.restart).isEnabled = true
+        menu.findItem(R.id.mnu_restart).isEnabled = true
     }
 
     private fun getFileName(uri: Uri): String? {
@@ -216,6 +235,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu, menu)
         this.menu = menu
+        menu.findItem(R.id.mnu_recent).isEnabled = recentUri != null
         return true
     }
 
@@ -294,4 +314,9 @@ class MainActivity : AppCompatActivity() {
         }
         b.btnNext.text = getString(R.string.btn_next_next)
     }
+
+    fun onMenuRecent(item: MenuItem) {
+        applyUri(recentUri)
+    }
+
 }

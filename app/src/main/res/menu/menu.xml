@@ -2,12 +2,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/file"
+        android:id="@+id/mnu_file"
         android:onClick="onMenuFile"
         android:title="@string/open_xslx"
         app:showAsAction="never"/>
 
-    <item android:id="@+id/restart"
+    <item
+        android:id="@+id/mnu_recent"
+        android:onClick="onMenuRecent"
+        android:title="@string/open_recent"
+        app:showAsAction="never"/>
+
+    <item android:id="@+id/mnu_restart"
         android:onClick="onMenuRestart"
         android:title="@string/restart"
         app:showAsAction="never"
