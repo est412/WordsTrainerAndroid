@@ -228,8 +228,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun interface OnScale : ScaleGestureDetector.OnScaleGestureListener {
-        override fun onScaleBegin(p0: ScaleGestureDetector?): Boolean = true
-        override fun onScaleEnd(p0: ScaleGestureDetector?) {}
+        override fun onScaleBegin(p0: ScaleGestureDetector): Boolean = true
+        override fun onScaleEnd(p0: ScaleGestureDetector) {}
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
